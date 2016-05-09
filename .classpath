@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="lib" path="libs/javax.ws.rs-api-2.0.jar"/>
+	<classpathentry kind="lib" path="libs/californium-core-1.0.0-SNAPSHOT.jar"/>
+	<classpathentry excluding="com/eislab/af/translator/spokes/Coap_spoke.java|com/eislab/af/core/ArrowheadAccessorRest.java|com/eislab/af/core/ArrowheadAccessorRestTest.java|com/eislab/af/wheelloader/synthetic/" kind="src" path="src"/>
+	<classpathentry kind="src" path="californium-master/api-demo/src"/>
+	<classpathentry kind="src" path="californium-master/californium-core/src/main/java"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="lib" path="libs/element-connector-1.0.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="libs/org.eclipse.paho.client.mqttv3-1.0.1.jar"/>
+	<classpathentry kind="lib" path="libs/javax.annotation-api-1.2.jar"/>
+	<classpathentry kind="lib" path="libs/jersey-common-2.4.jar"/>
+	<classpathentry kind="lib" path="libs/jersey-client-2.4.jar"/>
+	<classpathentry kind="lib" path="libs/hk2-utils-2.2.0-b21.jar"/>
+	<classpathentry kind="lib" path="libs/hk2-api-2.2.0-b21.jar"/>
+	<classpathentry kind="lib" path="libs/hk2-locator-2.2.0-b21.jar"/>
+	<classpathentry kind="lib" path="libs/cglib-2.2.0-b21.jar"/>
+	<classpathentry kind="lib" path="libs/javax.inject-2.2.0-b21.jar"/>
+	<classpathentry kind="lib" path="libs/jetty-server-9.1.0.M0.jar"/>
+	<classpathentry kind="lib" path="libs/jetty-servlet-9.1.0.M0.jar"/>
+	<classpathentry kind="lib" path="libs/jetty-util-9.1.0.M0.jar"/>
+	<classpathentry kind="lib" path="libs/jetty-http-9.1.0.M0.jar"/>
+	<classpathentry kind="lib" path="libs/jetty-io-9.1.0.M0.jar"/>
+	<classpathentry kind="lib" path="libs/jetty-security-9.1.0.M0.jar"/>
+	<classpathentry kind="lib" path="libs/jersey-client-1.8.jar"/>
+	<classpathentry kind="lib" path="libs/jersey-container-servlet-2.4.jar"/>
+	<classpathentry kind="lib" path="libs/jersey-container-servlet-core-2.4.jar"/>
+	<classpathentry kind="lib" path="libs/jersey-core-1.8.jar"/>
+	<classpathentry kind="lib" path="libs/jersey-server-2.4.jar"/>
+	<classpathentry kind="lib" path="libs/osgi-resource-locator-1.0.1.jar"/>
+	<classpathentry kind="lib" path="libs/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="libs/core-utils-1.4.jar"/>
+	<classpathentry kind="lib" path="libs/jdom-2.0.4.jar"/>
+	<classpathentry kind="lib" path="libs/asm-all-repackaged-2.2.0-b21.jar"/>
+	<classpathentry kind="lib" path="libs/validation-api-1.1.0.Final.jar"/>
+	<classpathentry kind="lib" path="libs/httpclient-4.2.5.jar" sourcepath="C:/Users/hasder/.m2/repository/org/apache/httpcomponents/httpclient/4.2.5/httpclient-4.2.5-sources.jar"/>
+	<classpathentry kind="lib" path="libs/httpcore-4.2.5.jar" sourcepath="C:/Users/hasder/.m2/repository/org/apache/httpcomponents/httpcore/4.2.5/httpcore-4.2.5-sources.jar"/>
+	<classpathentry kind="lib" path="libs/httpcore-nio-4.2.5.jar" sourcepath="C:/Users/hasder/.m2/repository/org/apache/httpcomponents/httpcore-nio/4.2.5/httpcore-nio-4.2.5-sources.jar"/>
+	<classpathentry kind="lib" path="libs/commons-logging-1.1.1.jar"/>
+	<classpathentry kind="lib" path="libs/commons-codec-1.10.jar"/>
+	<classpathentry kind="lib" path="libs/guava-15.0.jar"/>
+	<classpathentry kind="lib" path="libs/commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="libs/javax.servlet-api-3.1.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
