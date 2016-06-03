@@ -111,7 +111,8 @@ public class TranslatorService {
 		
 		hubs.put(id, hub);
 		
-		response = Response.ok("<translatorId>newtranslator=" + id + "</translatorId><translatorAddress>"+ hub.getPSpokeAddress() +"</translatorAddress>").build();
+		//response = Response.ok("<translatorId>newtranslator=" + id + "</translatorId><translatorAddress>"+ hub.getPSpokeAddress() +"</translatorAddress>").build();
+		response = Response.ok("<translationendpoint><id>" + id + "</id><ip>"+ hub.getPSpokeIp() +"</ip><port>"+ hub.getPSpokePort() +"</port></translationendpoint>").build();
 		
 		return response;
 	

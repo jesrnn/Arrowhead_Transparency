@@ -32,6 +32,8 @@ import com.eislab.af.translator.spokes.HttpClient_spoke;
 import com.eislab.af.translator.spokes.HttpServer_spoke;
 import com.eislab.af.translator.spokes.MqttClient_spoke;
 import com.eislab.af.translator.spokes.MqttServer_spoke;
+import com.eislab.af.translator.spokes.UaClient_spoke;
+import com.eislab.af.translator.spokes.UaServer_spoke;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -51,7 +53,9 @@ public class Translator_hub {//implements Runnable {
 	private String  pSpoke_ConsumerName = null;
 	private String  pSpoke_ConsumerType = null;
 	private String  pSpoke_ConsumerAddress = null;
-	private String	pSpokeAddress;
+	private String	pSpokeAddress = null;
+	private String	pSpokeIp = null;
+	private String	pSpokePort = null;
 //	private String 	pSpokePath;		//translationPath;// 	= "*";
 
 	BaseSpokeConsumer cSpoke;
@@ -98,8 +102,8 @@ public class Translator_hub {//implements Runnable {
 			} else if (pSpoke_ConsumerName.contains("http")) {
 				//HttpServer_spoke httpserver = new HttpServer_spoke(translationPort, translationPath);
 				pSpoke = new HttpServer_spoke(properties.getProperty("translator.interface.ipaddress"), "/*");
-//			}  else if (pSpoke_ConsumerName.contains("opc")) {
-//				pSpoke = new OPCServer_spoke(properties.getProperty("translator.interface.ipaddress"), "/*");
+			}  else if (pSpoke_ConsumerName.contains("ua")) {
+				pSpoke = new UaServer_spoke(properties.getProperty("translator.interface.ipaddress"), "/*");
 			} else if (pSpoke_ConsumerName.contains("mqtt")) {
 				String brokerUri = "tcp://localhost:1883";//TODO: get these values from ORCHESTRaTOR OR METADATA
 				int maxPublishDelay = 1000; //1 second
@@ -119,8 +123,8 @@ public class Translator_hub {//implements Runnable {
 			} else if(cSpoke_ProviderName.contains("mqtt")) {
 //				String brokerUri = "tcp://localhost:1883";//TODO: get these values from ORCHESTRaTOR OR METADATA
 				cSpoke = new MqttClient_spoke(cSpoke_ProviderAddress);
-//			} else if(cSpoke_ProviderName.contains("opc")) {
-//				cSpoke = new OPCClient_spoke(cSpoke_ProviderAddress);
+			} else if(cSpoke_ProviderName.contains("ua")) {
+				cSpoke = new UaClient_spoke(cSpoke_ProviderAddress);
 			} else {
 				System.exit(1);
 			}			
@@ -177,10 +181,49 @@ public class Translator_hub {//implements Runnable {
 			this.setPSpokeAddress(address);
 		}
 		return pSpokeAddress;
-	}
-	
+	}	
 	private void setPSpokeAddress(String pSpokeAddress) {
 		this.pSpokeAddress = pSpokeAddress;
+	}
+	// 
+	public String getPSpokeIp() {
+		if (pSpokeIp == null) {
+			String temp = this.pSpoke.getAddress();
+			temp = temp.substring(temp.indexOf("//") + 2);
+			if(temp.startsWith("[")) {
+				temp = temp.substring(0, temp.indexOf("]") + 1);
+			} else {
+				temp = temp.substring(0, temp.indexOf(":"));
+			}
+			String pSpokeIp = temp;
+			this.setPSpokeIp(pSpokeIp);
+		}
+		return pSpokeIp;
+	}	
+	private void setPSpokeIp(String pSpokeIp) {
+		this.pSpokeIp = pSpokeIp;
+	}
+	// 
+	public String getPSpokePort() {
+		if (pSpokePort == null) {
+			String temp = this.pSpoke.getAddress();
+			temp = temp.substring(temp.indexOf("//") + 2);
+			if(temp.startsWith("[")) {
+				temp = temp.substring(temp.indexOf("]") + 1);
+				temp = temp.substring(0, temp.indexOf("/"));
+			} else {
+				temp = temp.substring(temp.indexOf(":") + 1);
+			}
+			
+			String pSpokePort = temp;
+			
+			this.setPSpokePort(pSpokePort);
+		}
+		return pSpokePort;
+	}
+	
+	private void setPSpokePort(String pSpokePort) {
+		this.pSpokePort = pSpokePort;
 	}
 
 //	public String getPSpokePath() {

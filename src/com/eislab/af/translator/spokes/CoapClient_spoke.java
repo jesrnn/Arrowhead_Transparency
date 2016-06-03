@@ -45,7 +45,11 @@ public class CoapClient_spoke implements BaseSpokeConsumer {
 	
 	public CoapClient_spoke(String serviceAddress) throws UnknownHostException {
 //		super("");
-		this.serviceAddress = serviceAddress;
+		if(serviceAddress.startsWith("coap")) {
+			this.serviceAddress = serviceAddress;
+		} else {
+			this.serviceAddress = "coap://" + serviceAddress;
+		}
 		
 	}
 
