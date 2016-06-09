@@ -82,7 +82,7 @@ public class TranslatorService {
 		Response response;
 		
 		Translator_hub hub = new Translator_hub();
-		
+		System.out.println("postTranslator received: " + setup.getProviderName() + " ProviderSpoke: " + setup.getConsumerName());
 		//cSpoke is the spoke connected to the service provider endpoint
 		String cSpoke_ProviderName = 	setup.getProviderName().substring(0).toLowerCase();
 		String cSpoke_ProviderType = 	setup.getProviderType().substring(0).toLowerCase();

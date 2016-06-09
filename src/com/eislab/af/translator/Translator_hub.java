@@ -89,13 +89,10 @@ public class Translator_hub {//implements Runnable {
 	
 	public void online() {
 		
-		//use reflection to create spokes?
+
 		try {
-//			providerSpoke = new Coap_spoke(this, "wheelloadersensordata", 5684, "coap://127.0.0.1:5683/wheel_loader");
-//			consumerSpoke = new Mqtt_spoke(this, "tcp://localhost:1883", "pahomqttpublish110Pub", "wheelloadersensordata1");
-			
-			//CoapServer coap2httpServer = new CoapServer_spoke(5630);
-			//coap2httpServer.start();
+
+			System.out.println("go online: ConsumerSpoke: " + cSpoke_ProviderName + " ProviderSpoke: " + pSpoke_ConsumerName);
 			
 			if ( pSpoke_ConsumerName.contains("coap") ) {
 				pSpoke = new CoapServer_spoke(properties.getProperty("translator.interface.ipaddress"));
