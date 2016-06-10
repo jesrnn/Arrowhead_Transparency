@@ -206,7 +206,7 @@ public class Translator_hub {//implements Runnable {
 			String temp = this.pSpoke.getAddress();
 			temp = temp.substring(temp.indexOf("//") + 2);
 			if(temp.startsWith("[")) {
-				temp = temp.substring(temp.indexOf("]") + 1);
+				temp = temp.substring(temp.indexOf("]") + 2);
 				temp = temp.substring(0, temp.indexOf("/"));
 			} else {
 				temp = temp.substring(temp.indexOf(":") + 1);
@@ -256,6 +256,7 @@ public class Translator_hub {//implements Runnable {
 			result = true;
 		} catch (IOException e) {
 			//LOG.severe("Failed to read property file " + fileName + ". Reason: " + e.getMessage());
+			System.out.println("Failed to read property file " + fileName + ". Reason: " + e.getMessage());
 			System.exit(-1);
 		}
 		return result;

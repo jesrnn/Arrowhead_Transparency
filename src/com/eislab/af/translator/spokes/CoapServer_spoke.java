@@ -43,10 +43,12 @@ public class CoapServer_spoke extends CoapServer implements BaseSpokeProvider{
 
 	BaseSpoke nextSpoke;
 	Map<Integer, Exchange> cachedCoapExchangeMap = new HashMap<Integer,Exchange>();
+	String interfaceAddress = "";
 	
 	
 	public CoapServer_spoke(String ipaddress, int port) {
 		super(port);
+		this.interfaceAddress = ipaddress;
 		this.start();
 	}
 	
@@ -131,7 +133,7 @@ public class CoapServer_spoke extends CoapServer implements BaseSpokeProvider{
 	@Override
 	public String getAddress() {
 		// TODO Get full address of the spoke providers (scheme, url, port, path)
-		return "coap:/" + this.getEndpoints().get(0).getAddress().toString();
+		return "coap://" + this.interfaceAddress + ":" + Integer.toString(this.getEndpoints().get(0).getAddress().getPort()) + "/";
 	}
 
 	@Override

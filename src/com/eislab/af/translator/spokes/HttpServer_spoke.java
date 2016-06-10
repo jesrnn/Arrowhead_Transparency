@@ -113,7 +113,7 @@ public class HttpServer_spoke implements BaseSpokeProvider {
 
 	@Override
 	public String getAddress() {
-		return "http:/" + address;
+		return "http://" + address;
 	}
 
 	
@@ -138,6 +138,7 @@ public class HttpServer_spoke implements BaseSpokeProvider {
 	
 	public HttpServer_spoke(String ipaddress, String path) throws IOException, InterruptedException {
 
+		address = ipaddress;
 		// HTTP parameters for the server
 		HttpParams params = new SyncBasicHttpParams();
 		params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, SOCKET_TIMEOUT).setIntParameter(CoreConnectionPNames.SOCKET_BUFFER_SIZE, SOCKET_BUFFER_SIZE).setBooleanParameter(CoreConnectionPNames.TCP_NODELAY, true).setParameter(CoreProtocolPNames.ORIGIN_SERVER, SERVER_NAME);
@@ -194,7 +195,7 @@ public class HttpServer_spoke implements BaseSpokeProvider {
 
 			endpoint1.waitFor();
 
-			address = ((InetSocketAddress) endpoint1.getAddress()).toString();
+			address = address + ":" + Integer.toString(((InetSocketAddress) endpoint1.getAddress()).getPort()) + "/";
 			System.out.println(address);
 			
 			
