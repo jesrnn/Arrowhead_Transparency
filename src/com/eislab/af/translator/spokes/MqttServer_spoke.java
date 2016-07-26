@@ -136,7 +136,7 @@ public class MqttServer_spoke implements MqttCallback, BaseSpokeProvider  {
 			context.setContentType("");
 			context.setMethod("post");
 			context.setPath(arg0);
-			
+			activity++;
 			this.nextSpoke.in(context);
 		}
 	}
@@ -200,7 +200,7 @@ public class MqttServer_spoke implements MqttCallback, BaseSpokeProvider  {
 					context.setMethod("get");
 					context.setPath(this.serviceProviderPath);
 					context.setContentType("");
-					
+					activity++;
 					nextSpoke.in(context);
 				
 					Thread.sleep(this.maxPublishDelay);//sleep for 1 second
@@ -210,5 +210,21 @@ public class MqttServer_spoke implements MqttCallback, BaseSpokeProvider  {
 				}				
 			}
 		}
+	}
+
+	
+	public int activity = 0;
+	
+	@Override
+	public int getLastActivity() {
+		// TODO Auto-generated method stub
+		return activity;
+	}
+
+
+	@Override
+	public void clearActivity() {
+		// TODO Auto-generated method stub
+		activity = 0;
 	}
 }

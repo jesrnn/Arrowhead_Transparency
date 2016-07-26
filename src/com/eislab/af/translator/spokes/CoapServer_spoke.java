@@ -82,7 +82,7 @@ public class CoapServer_spoke extends CoapServer implements BaseSpokeProvider{
 		@Override
 		public void handleRequest(Exchange exchange) {
 			exchange.sendAccept();
-
+			activity++;
 			BaseContext context = new BaseContext();
 
 			cachedCoapExchangeMap.put(context.getKey(), exchange);
@@ -138,8 +138,22 @@ public class CoapServer_spoke extends CoapServer implements BaseSpokeProvider{
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
+		this.destroy();
 		
+	}
+
+	private int activity = 0;
+	
+	@Override
+	public int getLastActivity() {
+		// TODO Auto-generated method stub
+		return activity;
+	}
+
+	@Override
+	public void clearActivity() {
+		// TODO Auto-generated method stub
+		activity = 0; 
 	}
 	
 }

@@ -51,6 +51,9 @@ public class CoapClient_spoke implements BaseSpokeConsumer {
 			this.serviceAddress = "coap://" + serviceAddress;
 		}
 		
+		CoapClient pingClient = new CoapClient(serviceAddress);
+		pingClient.ping();
+		
 	}
 
 	@Override
@@ -104,8 +107,23 @@ public class CoapClient_spoke implements BaseSpokeConsumer {
 			} else {
 				//TODO: need to signal an error to the next spoke
 			}
+			activity++;
 			nextSpoke.in(context);
 		}
+	}
+
+	public int activity = 0;
+	
+	@Override
+	public int getLastActivity() {
+		// TODO Auto-generated method stub
+		return activity;
+	}
+
+	@Override
+	public void clearActivity() {
+		// TODO Auto-generated method stub
+		activity = 0;
 	}
 
 	

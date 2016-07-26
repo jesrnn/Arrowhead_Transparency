@@ -25,6 +25,8 @@ package com.eislab.af.translator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Observable;
+import java.util.Observer;
 
 import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
@@ -41,11 +43,13 @@ import com.eislab.af.translator.data.TranslatorSetup;
 
 @Path("/")
 @Singleton
-public class TranslatorService {
+public class TranslatorService implements Observer {
 
 	Map<Integer, Translator_hub> hubs = new HashMap<Integer, Translator_hub>();
 	
-	public TranslatorService() { }	
+	public TranslatorService() {
+		
+	}	
 	
 	@Path("/translator")
 	@GET
@@ -81,39 +85,47 @@ public class TranslatorService {
     public Response postTranslator(TranslatorSetup setup) {
 		Response response;
 		
-		Translator_hub hub = new Translator_hub();
-		System.out.println("postTranslator received: " + setup.getProviderName() + " ProviderSpoke: " + setup.getConsumerName());
-		//cSpoke is the spoke connected to the service provider endpoint
-		String cSpoke_ProviderName = 	setup.getProviderName().substring(0).toLowerCase();
-		String cSpoke_ProviderType = 	setup.getProviderType().substring(0).toLowerCase();
-		String cSpoke_ProviderAddress = setup.getProviderAddress().substring(0).toLowerCase();
+		//--------- Check if a hub which satisfies the  request already exists ----------
+		//make a fingerprint based on service provider name and service consumer name combined and hashed.
+		//combination of providername and consumername will be a fully unique pairing. THIS MAY CHANGE IN THE FUTURE AND DO IT BASED ON TYPE + ADDRESS
+		int fingerprint = (setup.getProviderName() + setup.getConsumerName()).hashCode();
 		
-		//pSpoke is the spoke connected to the service consumer endpoint
-		String pSpoke_ConsumerName = 	setup.getConsumerName().substring(0).toLowerCase();
-		String pSpoke_ConsumerType = 	setup.getConsumerType().substring(0).toLowerCase();
-		String pSpoke_ConsumerAddress = setup.getConsumerAddress().substring(0).toLowerCase();
+		if(!hubs.isEmpty() && hubs.containsKey(fingerprint)) {
+			Translator_hub existingHub = hubs.get(fingerprint);
+			response = Response.ok("<translationendpoint><id>" + existingHub.getId() + "</id><ip>"+ existingHub.getPSpokeIp() +"</ip><port>"+ existingHub.getPSpokePort() +"</port></translationendpoint>").build();
+		} else {
 		
-//		String serviceEndpoint = setup.getProviderAddress().substring(0);
-//		String providerType = setup.getConsumerName().substring(0).toLowerCase();
-//		String providerEndpoint = setup.getConsumerAddress().substring(0);
-		
-		//hub.setProviderSpokeType(pSpoke_ConsumerName);
-		//hub.setConsumerSpokeType(cSpoke_ProviderName);
-		hub.setPSpoke_ConsumerName(pSpoke_ConsumerName);
-		hub.setCSpoke_ProviderName(cSpoke_ProviderName);
-		
-//		hub.setPSpokePath("/*");//hub.setTranslationPath("*");
-		hub.setCSpoke_ProviderAddress(cSpoke_ProviderAddress);//hub.setServiceEndpoint("coap://127.0.0.1:5692/");
-		
-		int id = hub.getId();
-		
-		hub.online();
-		
-		hubs.put(id, hub);
-		
-		//response = Response.ok("<translatorId>newtranslator=" + id + "</translatorId><translatorAddress>"+ hub.getPSpokeAddress() +"</translatorAddress>").build();
-		response = Response.ok("<translationendpoint><id>" + id + "</id><ip>"+ hub.getPSpokeIp() +"</ip><port>"+ hub.getPSpokePort() +"</port></translationendpoint>").build();
-		
+			Translator_hub hub = new Translator_hub(this);
+			System.out.println("post to Translator received: ClientSpoke type:" + setup.getProviderType() + " ServerSpoke type: " + setup.getConsumerType());
+			
+			//cSpoke is the spoke connected to the service provider endpoint
+			String cSpoke_ProviderName = 	setup.getProviderName().substring(0).toLowerCase();
+			String cSpoke_ProviderType = 	setup.getProviderType().substring(0).toLowerCase();
+			String cSpoke_ProviderAddress = setup.getProviderAddress().substring(0).toLowerCase();
+			
+			//pSpoke is the spoke connected to the service consumer endpoint
+			String pSpoke_ConsumerName = 	setup.getConsumerName().substring(0).toLowerCase();
+			String pSpoke_ConsumerType = 	setup.getConsumerType().substring(0).toLowerCase();
+			String pSpoke_ConsumerAddress = setup.getConsumerAddress().substring(0).toLowerCase();
+			
+			hub.setPSpoke_ConsumerName(pSpoke_ConsumerName);
+			hub.setpSpoke_ConsumerType(pSpoke_ConsumerType);
+			hub.setpSpoke_ConsumerAddress(pSpoke_ConsumerAddress);
+			hub.setCSpoke_ProviderName(cSpoke_ProviderName);
+			hub.setcSpoke_ProviderType(cSpoke_ProviderType);
+			hub.setCSpoke_ProviderAddress(cSpoke_ProviderAddress);//hub.setServiceEndpoint("coap://127.0.0.1:5692/");
+			
+			int id = hub.getId();
+			
+			hub.setFingerprint(fingerprint);
+			
+			hub.online();
+			
+			hubs.put(fingerprint, hub);
+			
+			//response = Response.ok("<translatorId>newtranslator=" + id + "</translatorId><translatorAddress>"+ hub.getPSpokeAddress() +"</translatorAddress>").build();
+			response = Response.ok("<translationendpoint><id>" + id + "</id><ip>"+ hub.getPSpokeIp() +"</ip><port>"+ hub.getPSpokePort() +"</port></translationendpoint>").build();
+		}
 		return response;
 	
 	}
@@ -135,6 +147,12 @@ public class TranslatorService {
 		
 		return response;
 	
+	}
+
+	@Override
+	public void update(Observable arg0, Object arg1) {
+		hubs.remove((int)arg1);
+		System.out.println("Cleanup hub: " + (int)arg1);
 	}
 	
 }

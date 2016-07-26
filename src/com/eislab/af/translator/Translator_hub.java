@@ -37,17 +37,21 @@ import com.eislab.af.translator.spokes.UaServer_spoke;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Properties;
 
 interface Translator_hub_i {
 	void writeToConsole(String msg);
 }
 
-public class Translator_hub {//implements Runnable {
+public class Translator_hub extends Observable {//implements Runnable {
 
 	private int id = 0;	
 
 	public static Properties properties;
+	public boolean noactivity = false;
+	private int fingerprint = 0;
 	
 	BaseSpokeProvider pSpoke;
 	private String  pSpoke_ConsumerName = null;
@@ -66,11 +70,63 @@ public class Translator_hub {//implements Runnable {
 	private String  cSpoke_ProviderPath;
 	
 	public Translator_hub(String StubConfiguration)	{
-		this();
+		//this();
+		
 	}
 	
-	public Translator_hub() {
+	class SpokeActivityMonitor implements Runnable {
+		
+		int counter = 0;
+		
+		public SpokeActivityMonitor() {
+			
+		}
+		
+		@Override
+		public void run() {
+			while(true) {
+				// Start a timer
+				try {
+					//Thread.sleep(600000);//600,000 ms = 10minutes
+					Thread.sleep(10000); //10,000 ms = 10 seconds for testing
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				if ( (cSpoke.getLastActivity() > 0) || (pSpoke.getLastActivity() > 0) ){
+					cSpoke.clearActivity();
+					pSpoke.clearActivity();
+					counter = 0;
+				} else if (counter < 1){
+					counter++;
+				} else {
+					noactivity = true;//request translation service to release reference to the hub.
+					
+					pSpoke.close();
+					cSpoke.close();
+					
+					Translator_hub.this.setChanged();
+					Translator_hub.this.notifyObservers(Translator_hub.this.getFingerprint());
+					
+					return;
+				}
+				// else if (activity grace period not over)
+					//count missed activity
+				// else
+					// close the hub and remove from list in translator service
+				
+			}
+		}
+	}
+	
+	public Translator_hub(Observer observer) {
 		loadProperties("translator.properties");
+		this.addObserver(observer);
+		
+		SpokeActivityMonitor activityMonitor = new SpokeActivityMonitor();
+		new Thread(activityMonitor).start();
+		
 	}
 	
 	
@@ -94,14 +150,14 @@ public class Translator_hub {//implements Runnable {
 
 			System.out.println("go online: ConsumerSpoke: " + cSpoke_ProviderName + " ProviderSpoke: " + pSpoke_ConsumerName);
 			
-			if ( pSpoke_ConsumerName.contains("coap") ) {
+			if ( pSpoke_ConsumerType.contains("coap") ) {
 				pSpoke = new CoapServer_spoke(properties.getProperty("translator.interface.ipaddress"));
-			} else if (pSpoke_ConsumerName.contains("http")) {
+			} else if (pSpoke_ConsumerType.contains("http")) {
 				//HttpServer_spoke httpserver = new HttpServer_spoke(translationPort, translationPath);
 				pSpoke = new HttpServer_spoke(properties.getProperty("translator.interface.ipaddress"), "/*");
-			}  else if (pSpoke_ConsumerName.contains("ua")) {
+			}  else if (pSpoke_ConsumerType.contains("ua")) {
 				pSpoke = new UaServer_spoke(properties.getProperty("translator.interface.ipaddress"), "/*");
-			} else if (pSpoke_ConsumerName.contains("mqtt")) {
+			} else if (pSpoke_ConsumerType.contains("mqtt")) {
 				String brokerUri = "tcp://localhost:1883";//TODO: get these values from ORCHESTRaTOR OR METADATA
 				int maxPublishDelay = 1000; //1 second
 				boolean MqttServer_spoke = true;
@@ -113,14 +169,14 @@ public class Translator_hub {//implements Runnable {
 				System.exit(1);
 			}
 			
-			if(cSpoke_ProviderName.contains("coap")) {
+			if(cSpoke_ProviderType.contains("coap")) {
 				cSpoke = new CoapClient_spoke(cSpoke_ProviderAddress);
-			} else if(cSpoke_ProviderName.contains("http")) {
+			} else if(cSpoke_ProviderType.contains("http")) {
 				cSpoke = new HttpClient_spoke(cSpoke_ProviderAddress);
-			} else if(cSpoke_ProviderName.contains("mqtt")) {
+			} else if(cSpoke_ProviderType.contains("mqtt")) {
 //				String brokerUri = "tcp://localhost:1883";//TODO: get these values from ORCHESTRaTOR OR METADATA
 				cSpoke = new MqttClient_spoke(cSpoke_ProviderAddress);
-			} else if(cSpoke_ProviderName.contains("ua")) {
+			} else if(cSpoke_ProviderType.contains("ua")) {
 				cSpoke = new UaClient_spoke(cSpoke_ProviderAddress);
 			} else {
 				System.exit(1);
@@ -154,6 +210,14 @@ public class Translator_hub {//implements Runnable {
 		return id;
 	}
 
+
+	public int getFingerprint() {
+		return fingerprint;
+	}
+
+	public void setFingerprint(int fingerprint) {
+		this.fingerprint = fingerprint;
+	}
 
 	public String getPSpoke_ConsumerName() {
 		return pSpoke_ConsumerName;
@@ -239,6 +303,30 @@ public class Translator_hub {//implements Runnable {
 		this.cSpoke_ProviderAddress = cSpoke_ProviderAddress;
 	}
 	
+	public String getpSpoke_ConsumerType() {
+		return pSpoke_ConsumerType;
+	}
+
+	public void setpSpoke_ConsumerType(String pSpoke_ConsumerType) {
+		this.pSpoke_ConsumerType = pSpoke_ConsumerType;
+	}
+
+	public String getpSpoke_ConsumerAddress() {
+		return pSpoke_ConsumerAddress;
+	}
+
+	public void setpSpoke_ConsumerAddress(String pSpoke_ConsumerAddress) {
+		this.pSpoke_ConsumerAddress = pSpoke_ConsumerAddress;
+	}
+
+	public String getcSpoke_ProviderType() {
+		return cSpoke_ProviderType;
+	}
+
+	public void setcSpoke_ProviderType(String cSpoke_ProviderType) {
+		this.cSpoke_ProviderType = cSpoke_ProviderType;
+	}
+
 	/** 
 	 * Reads the properties from the file .properties
 	 *

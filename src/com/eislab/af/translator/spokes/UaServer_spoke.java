@@ -34,5 +34,19 @@ public class UaServer_spoke implements BaseSpokeProvider{
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public int activity = 0;
+	
+	@Override
+	public int getLastActivity() {
+		// TODO Auto-generated method stub
+		return activity;
+	}
+
+	@Override
+	public void clearActivity() {
+		// TODO Auto-generated method stub
+		activity = 0;
+	}
 
 }

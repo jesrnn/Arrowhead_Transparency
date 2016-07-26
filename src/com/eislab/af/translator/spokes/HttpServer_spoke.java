@@ -77,10 +77,16 @@ public class HttpServer_spoke implements BaseSpokeProvider {
 	BaseSpoke nextSpoke;
 	Map<Integer,HttpAsyncExchange> cachedHttpExchangeMap = new HashMap<Integer,HttpAsyncExchange>();
 	private String address = "";
+	ListeningIOReactor ioReactor;
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
+		try {
+			ioReactor.shutdown();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
@@ -164,8 +170,11 @@ public class HttpServer_spoke implements BaseSpokeProvider {
 
 		// Create server-side I/O event dispatch
 		final IOEventDispatch ioEventDispatch = new DefaultHttpServerIODispatch(protocolHandler, connFactory);
+		
+		
 
-		final ListeningIOReactor ioReactor;
+		
+
 		try {
 			// Create server-side I/O reactor
 			ioReactor = new DefaultListeningIOReactor();
@@ -245,7 +254,7 @@ public class HttpServer_spoke implements BaseSpokeProvider {
 //			try {
 				long lStartTime = System.nanoTime();
 				System.out.println(lStartTime + ": http: request received");
-				
+				activity++;
 				BaseContext context = new BaseContext();
 				
 				//store the http context for generating the response
@@ -296,6 +305,19 @@ public class HttpServer_spoke implements BaseSpokeProvider {
 			// Buffer request content in memory for simplicity
 			return new BasicAsyncRequestConsumer();
 		}
+	}
+
+	private int activity = 0;
+	@Override
+	public int getLastActivity() {
+		// TODO Auto-generated method stub
+		return activity;
+	}
+
+	@Override
+	public void clearActivity() {
+		// TODO Auto-generated method stub
+		activity = 0;
 	}
 	
 

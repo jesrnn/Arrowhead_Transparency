@@ -155,7 +155,7 @@ public class MqttClient_spoke implements MqttCallback, BaseSpokeConsumer  {
 						} else {
 							System.out.println("MQTT Client Spoke already subscribed to " + topic);	
 						}
-						
+						activity++;
 						this.nextSpoke.in(context);
 					} else {
 						subscribe(topic);
@@ -180,6 +180,7 @@ public class MqttClient_spoke implements MqttCallback, BaseSpokeConsumer  {
 					mqttClient.publish(context.getPath(), mqttMessage);
 					System.out.println("MQTT Spoke: Publish made: " + context.getContent());
 					context.setContent("ACK");
+					activity++;
 					this.nextSpoke.in(context);
 				}
 				
@@ -193,6 +194,20 @@ public class MqttClient_spoke implements MqttCallback, BaseSpokeConsumer  {
 	@Override
 	public void setNextSpoke(Object nextSpoke) {
 		this.nextSpoke = (BaseSpoke) nextSpoke;
+	}
+	
+	public int activity = 0;
+	
+	@Override
+	public int getLastActivity() {
+		// TODO Auto-generated method stub
+		return activity;
+	}
+
+	@Override
+	public void clearActivity() {
+		// TODO Auto-generated method stub
+		activity = 0;
 	}
 
 }
