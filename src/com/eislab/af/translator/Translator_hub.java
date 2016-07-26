@@ -87,8 +87,8 @@ public class Translator_hub extends Observable {//implements Runnable {
 			while(true) {
 				// Start a timer
 				try {
-					//Thread.sleep(600000);//600,000 ms = 10minutes
-					Thread.sleep(10000); //10,000 ms = 10 seconds for testing
+					Thread.sleep(60000);//60,000 ms = 1minute
+					//Thread.sleep(10000); //10,000 ms = 10 seconds for testing
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
