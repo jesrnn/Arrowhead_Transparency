@@ -132,8 +132,8 @@ public class UaRequester {
 	//Service Call Response
 	String serviceCallResultString;				//Default Audit Entry ID
 	
-	public UaRequester(UaClientConnector ArgClientConnector) throws Throwable{
-		ParentClientConnector = ArgClientConnector;
+	public UaRequester(UaClientConnector clientConnector) throws Throwable{
+		ParentClientConnector = clientConnector;
 		
 		authenticationToken = ParentClientConnector.sessionAuthenticationToken;
 		

@@ -34,8 +34,8 @@ import opcua.clientTranslator.UaRequester;
 
 public class UaServiceParser {
 	//Translator Modules
-	UaRequester uaRequester;
-	UaClientConnector uaClientConnector;
+	UaRequester requester;
+	UaClientConnector clientConnector;
 	
 	UaParameterParser uaServiceCallParser;
 	
@@ -43,8 +43,8 @@ public class UaServiceParser {
 	ArrayList<String[]> params = new ArrayList<String[]>();
 	
 	public UaServiceParser(UaRequester ParentUaRequester, UaClientConnector ParentClientConnector) throws Throwable{
-		this.uaRequester = ParentUaRequester;
-		this.uaClientConnector = ParentClientConnector;
+		this.requester = ParentUaRequester;
+		this.clientConnector = ParentClientConnector;
 		this.uaServiceCallParser = new UaParameterParser(this, ParentUaRequester);
 	}
 	

@@ -91,8 +91,8 @@ public class UaClientConnector {
 	public RequestHeader LatestRequestHeader = null;
 	
 	//CLIENT RESOURCES
-	public UaServiceParser ClientUaParser;
-	public UaRequester ClientUaRequester;
+	public UaServiceParser serviceParser;
+	public UaRequester requester;
 	
 	// INTERNAL, STATIC PARAMETERS
 	public UnsignedInteger maxResponseMessageSize = null;
@@ -146,16 +146,16 @@ public class UaClientConnector {
 	}
 	
 	public void createUaRequester() throws Throwable {
-		if(this.ClientUaRequester == null){
+		if(this.requester == null){
 			//Initiate UaRequester
-			this.ClientUaRequester = new UaRequester(this);
+			this.requester = new UaRequester(this);
 		}
 	}
 	
 	public void createUaParser() throws Throwable {
-		if(this.ClientUaParser == null){
+		if(this.serviceParser == null){
 			//Initiate UaParser
-			this.ClientUaParser = new UaServiceParser(this.ClientUaRequester, this);
+			this.serviceParser = new UaServiceParser(this.requester, this);
 		}
 	}
 	

@@ -42,7 +42,7 @@ public class UaClient_spoke implements BaseSpokeConsumer {
 		try {
 			if(this.internalClient == null){
 				response = "cannot access internal client";
-			} else if(this.internalClient.ClientUaParser == null) {
+			} else if(this.internalClient.serviceParser == null) {
 				response = "cannot access parser";
 			} else {
 				response = handleRequest(queryString(context.getPath()));
@@ -82,7 +82,7 @@ public class UaClient_spoke implements BaseSpokeConsumer {
 	}
 	
 	public String handleRequest(String requestQuery){
-		return this.internalClient.ClientUaParser.parseQuery(requestQuery);
+		return this.internalClient.serviceParser.parseQuery(requestQuery);
 	}
 
 	@Override
