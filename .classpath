@@ -2,6 +2,11 @@
 <classpath>
 	<classpathentry kind="lib" path="libs/javax.ws.rs-api-2.0.jar"/>
 	<classpathentry kind="lib" path="libs/californium-core-1.0.0-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="log4j-1.2.15.jar"/>
+	<classpathentry kind="lib" path="opcf-stack-pckg-library.jar"/>
+	<classpathentry kind="lib" path="slf4j-api-1.7.7.jar"/>
+	<classpathentry kind="lib" path="slf4j-log4j12-1.7.7.jar"/>
+	<classpathentry kind="lib" path="slf4j-simple-1.7.7.jar"/>
 	<classpathentry excluding="com/eislab/af/translator/spokes/Coap_spoke.java|com/eislab/af/core/ArrowheadAccessorRest.java|com/eislab/af/core/ArrowheadAccessorRestTest.java|com/eislab/af/wheelloader/synthetic/" kind="src" path="src"/>
 	<classpathentry kind="src" path="californium-master/api-demo/src"/>
 	<classpathentry kind="src" path="californium-master/californium-core/src/main/java"/>
