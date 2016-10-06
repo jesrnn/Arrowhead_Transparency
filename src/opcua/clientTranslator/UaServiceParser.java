@@ -37,7 +37,7 @@ public class UaServiceParser {
 	UaRequester requester;
 	UaClientConnector clientConnector;
 	
-	UaParameterParser uaServiceCallParser;
+	UaParameterParser parameterParser;
 	
 	//Service Call Parameters
 	ArrayList<String[]> params = new ArrayList<String[]>();
@@ -45,7 +45,7 @@ public class UaServiceParser {
 	public UaServiceParser(UaRequester ParentUaRequester, UaClientConnector ParentClientConnector) throws Throwable{
 		this.requester = ParentUaRequester;
 		this.clientConnector = ParentClientConnector;
-		this.uaServiceCallParser = new UaParameterParser(this, ParentUaRequester);
+		this.parameterParser = new UaParameterParser(this, ParentUaRequester);
 	}
 	
 	public String parseQuery(String query){
@@ -73,43 +73,43 @@ public class UaServiceParser {
         	String requestTypeParam = params[0];		//The first parameter pair must always be the definition of the type of service call. TODO: make more flexible
         	switch (requestTypeParam) {
             case "uarequest=read":
-            	resultString = this.uaServiceCallParser.ReadServiceRequest(paramsList);
+            	resultString = this.parameterParser.ReadServiceRequest(paramsList);
                 break;
                 
             case "uarequest=write":
-            	resultString = this.uaServiceCallParser.WriteServiceRequest(paramsList);
+            	resultString = this.parameterParser.WriteServiceRequest(paramsList);
                 break;
                 
             case "uarequest=browse":
-            	resultString = this.uaServiceCallParser.BrowseServiceRequest(paramsList);
+            	resultString = this.parameterParser.BrowseServiceRequest(paramsList);
                 break;
                 
             case "uarequest=translatebrowsepathstonodeids":
-            	resultString = this.uaServiceCallParser.TranslateBrowsePathsToNodeIds(paramsList);
+            	resultString = this.parameterParser.TranslateBrowsePathsToNodeIds(paramsList);
                 break;
                 
             case "uarequest=callmethod":
-            	resultString = this.uaServiceCallParser.CallMethodServiceRequest(paramsList);
+            	resultString = this.parameterParser.CallMethodServiceRequest(paramsList);
                 break;
                 
             case "uarequest=queryfirst":
-            	resultString = this.uaServiceCallParser.QueryServiceRequest(paramsList);
+            	resultString = this.parameterParser.QueryServiceRequest(paramsList);
                 break;
                 
             case "uarequest=addnodes":
-            	resultString = this.uaServiceCallParser.AddNodesServiceRequest(paramsList);
+            	resultString = this.parameterParser.AddNodesServiceRequest(paramsList);
                 break;
                 
             case "uarequest=deletenodes":
-            	resultString = this.uaServiceCallParser.DeleteNodesServiceRequest(paramsList);
+            	resultString = this.parameterParser.DeleteNodesServiceRequest(paramsList);
                 break;
                 
             case "uarequest=addreferences":
-            	resultString = this.uaServiceCallParser.AddReferencesServiceRequest(paramsList);
+            	resultString = this.parameterParser.AddReferencesServiceRequest(paramsList);
                 break;
                 
             case "uarequest=deletereferences":
-            	resultString = this.uaServiceCallParser.AddReferencesServiceRequest(paramsList);
+            	resultString = this.parameterParser.AddReferencesServiceRequest(paramsList);
                 break;
                 
             default: 
