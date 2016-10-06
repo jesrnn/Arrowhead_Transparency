@@ -7,28 +7,25 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 
-import opcua.client.UaClientConnector;
-
 import com.eislab.af.translator.data.BaseContext;
-import opcua.client.UaRequester;
-import opcua.client.UaParser;
-import opcua.client.UaClientConnector;
+
+import opcua.clientTranslator.UaClientConnector;
+import opcua.clientTranslator.UaRequester;
+import opcua.clientTranslator.UaServiceParser;
 
 public class UaClient_spoke implements BaseSpokeConsumer {
 	BaseSpoke nextSpoke;
 	UaClientConnector internalClient;
 	String providerAddress;								//address of target opcua server, defined in constructor
-	String query;
+	String spokeQuery;
 	ArrayList<String> requestParameters = null;
 	
-	public UaClient_spoke(String ProviderAddress, String queryStr) {
-		//this.providerAddress = "opc.tcp://MCOREII:4334/UA/MyLittleServer";
-		
+	public UaClient_spoke(String ProviderAddress) {
 		this.providerAddress = addressString(ProviderAddress);
-		this.query = queryString(ProviderAddress);
+		this.spokeQuery = queryString(ProviderAddress);
 		
 		try {
-			this.internalClient = new UaClientConnector(this.providerAddress);
+			this.internalClient = new UaClientConnector(this.providerAddress, this.spokeQuery);
 			//TODO: Other, more specific exceptions that are implemented in UaClientConnector: UnrecoverableKeyException, CertificateException, NoSuchAlgorithmException, KeyStoreException, IOException
 		} catch(Throwable e){
 			e.printStackTrace();
@@ -37,25 +34,19 @@ public class UaClient_spoke implements BaseSpokeConsumer {
 
 	@Override
 	public void in(BaseContext context) {
-	
-		// TODO Auto-generated method stub
+		
 		this.requestParameters = new ArrayList<String>();
 		
 		String response = null;
 		
 		try {
-			
 			if(this.internalClient == null){
-				response = "internalClient is null";
+				response = "cannot access internal client";
 			} else if(this.internalClient.ClientUaParser == null) {
-				response = "ClientUaParser is null";
+				response = "cannot access parser";
 			} else {
-				//if there is an internal client created that has a UaParser - hand off the query string to the parser
-				//response = this.internalClient.ClientUaRequester.ReadServiceRequest(ns_index, nodeId, attrId);
-				response = this.internalClient.ClientUaParser.parseQuery(this.query);
-				//response = this.query;
+				response = handleRequest(queryString(context.getPath()));
 			}
-			
 
 		} catch (Throwable e) {
 			// TODO Auto-generated catch block
@@ -63,29 +54,35 @@ public class UaClient_spoke implements BaseSpokeConsumer {
 		}
 		
 		System.out.print(response);
-		
+
 		if (response == null) {
-			context.setContent("null response from UaClientConnector");
+			context.setContent("null response from client connector");
 		} else {
-			context.setContent(response);
+			String finalResponse = concatenateContextAndResponse(context, response);
+			context.setContent(finalResponse);
 		}
-		
-		//TODO: remove commented nextSpoke method below to restore integrated functionality
-		//this.nextSpoke.in(context);
+		this.nextSpoke.in(context);
 	}
 	
 	public String queryString(String addressQuery){
 	      String delimeter = "\\?";
 	      String[] temp = addressQuery.split(delimeter);
-	      
 	      return temp[1];
 	}
 	
 	public String addressString(String addressQuery){
 	      String delimeter = "\\?";
 	      String[] temp = addressQuery.split(delimeter);
-	      
 	      return temp[0];
+	}
+	
+	public String concatenateContextAndResponse(BaseContext context, String response){
+		String localResponse = "REQUEST:\nContentType: " + context.getContentType() + "\nContent: " + context.getContent() + "\nKey: " + context.getKey() + "\nMethod: " + context.getMethod() + "\nPath: " + context.getPath() + "\n\nRESPONSE: " + response;
+		return localResponse;
+	}
+	
+	public String handleRequest(String requestQuery){
+		return this.internalClient.ClientUaParser.parseQuery(requestQuery);
 	}
 
 	@Override
@@ -98,7 +95,6 @@ public class UaClient_spoke implements BaseSpokeConsumer {
 	public void close() {
 		// TODO Auto-generated method stub
 	}
-	
 	
 	public int activity = 0;
 	
