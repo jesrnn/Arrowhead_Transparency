@@ -1,5 +1,7 @@
 package com.eislab.af.translator.spokes;
 
+//DEMO VERSION
+
 import java.io.IOException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
