@@ -200,12 +200,7 @@ public class UaRequest {
 	
 	
 	private void executeRequest(){
-		try{
-			
-			//.BrowseServiceRequest(paramsList);
-			//.ReadServiceRequest(paramsList);
-			//.WriteServiceRequest(paramsList);
-			
+		try{			
 			switch(this.serviceType){
 			
 			case Read:
