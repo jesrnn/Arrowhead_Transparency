@@ -12,8 +12,7 @@ import java.util.ArrayList;
 import com.eislab.af.translator.data.BaseContext;
 
 import opcua.clientTranslator.UaClientConnector;
-import opcua.clientTranslator.UaRequester;
-import opcua.clientTranslator.UaServiceParser;
+import opcua.clientTranslator.UaRequest;
 
 public class UaClient_spoke implements BaseSpokeConsumer {
 	BaseSpoke nextSpoke;
@@ -23,7 +22,7 @@ public class UaClient_spoke implements BaseSpokeConsumer {
 	ArrayList<String> requestParameters = null;
 	
 	public UaClient_spoke(String ProviderAddress) {
-		this.providerAddress = addressString(ProviderAddress);
+		this.providerAddress = pathString(ProviderAddress);
 		this.spokeQuery = queryString(ProviderAddress);
 		
 		try {
@@ -42,27 +41,13 @@ public class UaClient_spoke implements BaseSpokeConsumer {
 		String response = null;
 		
 		try {
-			if(this.internalClient == null){
-				response = "cannot access internal client";
-			} else if(this.internalClient.serviceParser == null) {
-				response = "cannot access parser";
-			} else {
-				response = handleRequest(queryString(context.getPath()));
-			}
-
+			//response = handleRequest(context); //TODO: fix a proper output
 		} catch (Throwable e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		System.out.print(response);
-
-		if (response == null) {
-			context.setContent("null response from client connector");
-		} else {
-			String finalResponse = concatenateContextAndResponse(context, response);
-			context.setContent(finalResponse);
-		}
+		response = this.handleRequest(context);
+		context.setContent("RESPONSE:\n" + response);
 		this.nextSpoke.in(context);
 	}
 	
@@ -72,19 +57,27 @@ public class UaClient_spoke implements BaseSpokeConsumer {
 	      return temp[1];
 	}
 	
-	public String addressString(String addressQuery){
+	public String pathString(String addressQuery){
 	      String delimeter = "\\?";
 	      String[] temp = addressQuery.split(delimeter);
 	      return temp[0];
 	}
 	
-	public String concatenateContextAndResponse(BaseContext context, String response){
+	/*public String concatenateContextAndResponse(BaseContext context, String response){
 		String localResponse = "REQUEST:\nContentType: " + context.getContentType() + "\nContent: " + context.getContent() + "\nKey: " + context.getKey() + "\nMethod: " + context.getMethod() + "\nPath: " + context.getPath() + "\n\nRESPONSE: " + response;
 		return localResponse;
-	}
+	}*/
 	
-	public String handleRequest(String requestQuery){
-		return this.internalClient.serviceParser.parseQuery(requestQuery);
+	public String handleRequest(BaseContext context){
+		String response;
+		
+		String query = queryString(context.getPath());
+		String path = pathString(context.getPath());
+		String content = context.getContent();
+		String method = context.getMethod();
+		response = this.internalClient.handleRequest(path, query, content, method);
+		
+		return response;
 	}
 
 	@Override
