@@ -132,7 +132,7 @@ public class RequestAggregate {
 			
 			processQueryParams(paramsList);
 		} else {
-			System.out.print("NULL QUERY STRING!");
+			System.out.print("NULL QUERY STRING!\n");
 		}
 
 	}
@@ -202,7 +202,24 @@ public class RequestAggregate {
 		}
 		
 		public void setTargetNode(int namespace, String name){
-			this.targetNode = new NodeId(namespace, name);
+			if(isIntegerFormat(name)){
+				this.targetNode = new NodeId(namespace, Integer.parseInt(name));
+			} else {
+				this.targetNode = new NodeId(namespace, name);
+			}
+		}
+		
+		public boolean isIntegerFormat(String name){
+			boolean returnValue = false;
+			try{
+				Integer.parseInt(name);
+				returnValue = true;
+			}catch(NumberFormatException nfe){
+				returnValue = false;
+			}catch(NullPointerException npe){
+				returnValue = false;
+			}
+			return returnValue;
 		}
 		
 		public void addTargetAttribute(int targetAttributeInt){
