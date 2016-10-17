@@ -77,7 +77,12 @@ public class UaClient_spoke implements BaseSpokeConsumer {
 	public String queryString(String addressQuery){
 	      String delimeter = "\\?";
 	      String[] temp = addressQuery.split(delimeter);
-	      return temp[1];
+	      
+	      if(temp.length > 1){
+	    	  return temp[1];
+	      } else {
+	    	  return null;
+	      }
 	}
 	
 	public String pathString(String addressQuery){

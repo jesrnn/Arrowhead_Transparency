@@ -89,7 +89,7 @@ public class RequestAggregate {
 				name = pathComponents[(pathComponents.length-1)];
 				namespace = Integer.parseInt(pathComponents[(pathComponents.length-2)]);
 				
-				//Hardcoded attribute table
+				//Hardcoded attribute table, since no specifications on formatting is yet imposed
 				this.paramBank.addTargetAttribute(1);
 				this.paramBank.addTargetAttribute(2);
 				this.paramBank.addTargetAttribute(3);
@@ -113,23 +113,28 @@ public class RequestAggregate {
 	}
 	
 	private void parseQueryString(){
-    	String[] params = this.queryString.split("\\;");
-    	
-		ArrayList<String[]> paramsList = new ArrayList<String[]>();
-		
-		for(int i=0; i<params.length ; i++){
-			String[] paramPair = new String[2];
-			paramPair = params[i].split("\\=");
+		if(this.queryString != null){
+	    	String[] params = this.queryString.split("\\;");
+	    	
+			ArrayList<String[]> paramsList = new ArrayList<String[]>();
 			
-			if(paramPair.length == 2){
-				paramsList.add(paramPair);
-			} else {
-				System.out.print("Invalid Parameter Pair: " + params[i] + "\n");
+			for(int i=0; i<params.length ; i++){
+				String[] paramPair = new String[2];
+				paramPair = params[i].split("\\=");
+				
+				if(paramPair.length == 2){
+					paramsList.add(paramPair);
+				} else {
+					System.out.print("Invalid Parameter Pair: " + params[i] + "\n");
+				}
 			}
+			// this.paramPairs = paramsList;
+			
+			processQueryParams(paramsList);
+		} else {
+			System.out.print("NULL QUERY STRING!");
 		}
-		// this.paramPairs = paramsList;
-		
-		processQueryParams(paramsList);
+
 	}
 	
 	private void parseMethod() throws Throwable{
@@ -169,14 +174,14 @@ public class RequestAggregate {
 	}
 	
 	public void processQueryParams(ArrayList<String[]> paramsList){
-		for(int i=1; i<paramsList.size(); i++){
+		for(int i=0; i<paramsList.size(); i++){
 			String[] paramArray =  paramsList.get(i);
 			String paramType = paramArray[0];
 			String paramArg = paramArray[1];
 			
 			switch (paramType){
             case "value":
-            	this.paramBank.writeValueDouble = Double.parseDouble(paramArg);
+            	this.paramBank.writeValueDouble = Double.valueOf(paramArg);
                 break;
                 
             default: 
@@ -207,12 +212,12 @@ public class RequestAggregate {
 		
 		public WriteValue[] getNodesToWrite(){
 			NodeId nodeId = this.targetNode;
-			Variant pVariant = new Variant(this.writeValueDouble);
-			DataValue writeValue = new DataValue(pVariant);
+			Variant variant = new Variant(this.writeValueDouble);
+			DataValue writeValue = new DataValue(variant);
 			
 			WriteValue[] nodesToWrite = new WriteValue[this.targetNodeAttributes.size()];
 			
-			for (int i=0; i<(this.targetNodeAttributes.size()-1); i++){
+			for (int i=0; i<(this.targetNodeAttributes.size()); i++){
 				nodesToWrite[i] = new WriteValue(nodeId, this.targetNodeAttributes.get(i), null, writeValue);
 			}
 			return nodesToWrite;

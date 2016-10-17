@@ -192,12 +192,13 @@ public class UaClientConnector {
 		    }
 	}
 	
-	public String handleRequest(String path, String query, String content, String methodString){	
+	public String handleRequest(String path, String query, String content, String methodString){
 		Method method = Method.valueOf(methodString);
 		RequestAggregate currentRequest = new RequestAggregate(this, method, path, query, content);
 		this.requests.add(currentRequest);
+		String response = currentRequest.getResponse();
 		
-		return currentRequest.getResponse();
+		return response;
 	}
 	
 	/**

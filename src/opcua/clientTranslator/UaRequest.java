@@ -173,25 +173,33 @@ public class UaRequest {
 				return "One or more critical browse parameter(s) is null";
 			}
 		} catch( ServiceFaultException sfe) {
-			System.out.print("\nServiceFaultException\n");
+			sfe.printStackTrace();
 			return null;
 		} catch (ServiceResultException sre ){
-			System.out.print("\nServiceResultException\n");
+			sre.printStackTrace();
 			return null;
 		}
 	}
 	
 	public String WriteServiceRequest(WriteValue[] NodesToWrite){
-		RequestHeader pRequestHeader = this.composeDefaultRequestHeader();
-		try {
-			WriteResponse writeResponse = ParentClientConnector.mySessionChannel.Write(pRequestHeader, NodesToWrite);
+		if(NodesToWrite.length != 0){
+			RequestHeader pRequestHeader = this.composeDefaultRequestHeader();
+			try {
+				WriteResponse writeResponse = ParentClientConnector.mySessionChannel.Write(pRequestHeader, NodesToWrite);
 
-			return writeResponse.toString();
-		} catch( ServiceFaultException sfe) {
-			return null;
-		} catch (ServiceResultException sre ){
+				return writeResponse.toString();
+			} catch( ServiceFaultException sfe) {
+				sfe.printStackTrace();
+				return null;
+			} catch (ServiceResultException sre ){
+				sre.printStackTrace();
+				return null;
+			}
+		} else {
+			System.out.print("no elements in parameter array! discarding request\n");
 			return null;
 		}
+
 	}
 	
 	public enum ServiceType {
