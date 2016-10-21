@@ -110,10 +110,16 @@ public class RequestAggregate {
 				this.paramBank.addTargetAttribute(13);
 				this.paramBank.addTargetAttribute(14);
 				
-			}else if(this.method == Method.put && pathComponents.length >= 4){
-				attribute = Integer.parseInt(pathComponents[(pathComponents.length-1)]);
-				name = pathComponents[(pathComponents.length-2)];
-				namespace = Integer.parseInt(pathComponents[(pathComponents.length-3)]);
+			}else if(this.method == Method.put && pathComponents.length >= 3){
+				if(pathComponents.length >= 4){
+					attribute = Integer.parseInt(pathComponents[(pathComponents.length-1)]);
+					name = pathComponents[(pathComponents.length-2)];
+					namespace = Integer.parseInt(pathComponents[(pathComponents.length-3)]);
+				} else {
+					name = pathComponents[(pathComponents.length-1)];
+					namespace = Integer.parseInt(pathComponents[(pathComponents.length-2)]);
+				}
+
 				
 				this.paramBank.addTargetAttribute(attribute);
 			}
