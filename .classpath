@@ -46,5 +46,6 @@
 	<classpathentry kind="lib" path="libs/guava-15.0.jar"/>
 	<classpathentry kind="lib" path="libs/commons-io-2.4.jar"/>
 	<classpathentry kind="lib" path="libs/javax.servlet-api-3.1.0.jar"/>
+	<classpathentry kind="lib" path="json_simple-1.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -37,6 +37,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.UUID;
 
+import org.opcfoundation.ua.builtintypes.Structure;
+import org.opcfoundation.ua.builtintypes.ExpandedNodeId;
+import org.opcfoundation.ua.core.Identifiers;
+import org.opcfoundation.ua.utils.ObjectUtils;
+import org.opcfoundation.ua.builtintypes.StatusCode;
+import org.opcfoundation.ua.core.ReferenceDescription;
+
 import org.opcfoundation.ua.application.Client;
 import org.opcfoundation.ua.application.Session;
 import org.opcfoundation.ua.application.SessionChannel;
@@ -50,6 +57,9 @@ import org.opcfoundation.ua.builtintypes.UnsignedShort;
 import org.opcfoundation.ua.builtintypes.Variant;
 import org.opcfoundation.ua.core.BrowseDescription;
 import org.opcfoundation.ua.core.BrowseDirection;
+import org.opcfoundation.ua.core.BrowseResponse;
+import org.opcfoundation.ua.core.BrowseResult;
+import org.opcfoundation.ua.core.ReferenceDescription;
 import org.opcfoundation.ua.core.ViewDescription;
 import org.opcfoundation.ua.common.ServiceResultException;
 import org.opcfoundation.ua.common.ServiceFaultException;
@@ -133,12 +143,27 @@ public class UaRequest {
 	String requestedTimeStamps;
 	
 	private String finalResponse;
+	private BrowseResponse browseResponse;
 	
 	public UaRequest(UaClientConnector clientConnector, ServiceType serviceType, UaParamBank parambank) throws Throwable{
 		ParentClientConnector = clientConnector;
 		this.serviceType = serviceType;
 		this.parambank = parambank;
 		executeRequest();
+	}
+	
+	public UaRequest(UaClientConnector clientConnector, ServiceType serviceType, UaParamBank parambank, NodeId referenceType) throws Throwable{
+		ParentClientConnector = clientConnector;
+		this.serviceType = serviceType;
+		this.parambank = parambank;
+		
+		this.parambank.setBrowseReferenceTypeFilterNodeId(referenceType);
+		
+		executeRequest();
+	}
+	
+	public BrowseResponse getBrowseResponse(){
+		return this.browseResponse;
 	}
 	
 	public RequestHeader composeDefaultRequestHeader(){
@@ -166,9 +191,10 @@ public class UaRequest {
 		RequestHeader requestHeader = this.composeDefaultRequestHeader();
 		try {
 			if(requestedMaxReferencesPerNode != null && nodesToBrowse != null){
-				BrowseResponse browseResponse = ParentClientConnector.mySessionChannel.Browse(requestHeader, view, requestedMaxReferencesPerNode, nodesToBrowse);
+				BrowseResponse browseResponseLocal = ParentClientConnector.mySessionChannel.Browse(requestHeader, view, requestedMaxReferencesPerNode, nodesToBrowse);
+				this.browseResponse = browseResponseLocal;
 				
-				return browseResponse.toString();
+				return browseResponseLocal.toString();
 			}else{
 				return "One or more critical browse parameter(s) is null";
 			}
@@ -235,5 +261,28 @@ public class UaRequest {
 	
 	public String getResponse(){
 		return this.finalResponse;
+	}
+	
+	public ExpandedNodeId[] getBrowseResultNodes(){
+		ArrayList<ExpandedNodeId> resultNodesArray = new ArrayList<ExpandedNodeId>();
+		
+		BrowseResult[] browseResults = this.browseResponse.getResults();
+		
+		int lng = browseResults.length;
+		for(int i=0; i<=(lng-1);i++){
+			ReferenceDescription[] localReferenceDescriptions = browseResults[i].getReferences();
+			
+			int lng2 = localReferenceDescriptions.length;
+			for(int k=0; k<=(lng2-1);k++){
+				resultNodesArray.add(localReferenceDescriptions[k].getNodeId());
+			}
+		}
+		
+		ExpandedNodeId[] resultNodes = new ExpandedNodeId[resultNodesArray.size()];
+		
+		for (int p=0; p<(resultNodesArray.size()); p++){
+			resultNodes[p] = resultNodesArray.get(p);
+		}
+		return resultNodes;
 	}
 }

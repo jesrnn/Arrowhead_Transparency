@@ -24,6 +24,9 @@
 package opcua.clientTranslator;
 
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.net.InetAddress;
+import java.io.IOException;
 
 import org.opcfoundation.ua.builtintypes.*;
 import org.opcfoundation.ua.core.BrowseDescription;
@@ -36,6 +39,12 @@ import org.opcfoundation.ua.core.WriteValue;
 import opcua.clientTranslator.*;
 import opcua.clientTranslator.UaRequest;
 import opcua.clientTranslator.UaRequest.ServiceType;
+
+import org.json.simple.*;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
+import org.json.simple.parser.JSONParser;
 
 public class RequestAggregate {
 	public Method method;
@@ -65,9 +74,11 @@ public class RequestAggregate {
 		NodeId targetNode;
 		
 		try {
+			parsePayload(payload);
 			parsePath();
 			parseQueryString();
 			parseMethod();
+			
 			
 		} catch(Throwable tbl){
 			tbl.printStackTrace();
@@ -81,8 +92,6 @@ public class RequestAggregate {
 		int attribute = 0;
 		String name = null;
 		int namespace = 0;
-		
-		
 		
 		if(pathComponents.length >= 3){
 			if(this.method == Method.get){
@@ -134,7 +143,6 @@ public class RequestAggregate {
 		} else {
 			System.out.print("NULL QUERY STRING!\n");
 		}
-
 	}
 	
 	private void parseMethod() throws Throwable{
@@ -152,6 +160,47 @@ public class RequestAggregate {
     	}
 	}
 	
+	private void parsePayload(String payload) throws Throwable{
+		String name;
+		Double writeValue = 0.0;
+		int attributeIndexInt = 0;
+		
+		JSONParser parser = new JSONParser();
+		System.out.println("PAYLOAD: \n" + payload);
+		try {
+	    	  Object obj3 = parser.parse(payload);
+	    	  JSONArray array = (JSONArray) obj3;
+	    	  
+	    	  for(int i=0; i <= (array.size()-1);i++){
+	    		  JSONObject arrayElement= (JSONObject) array.get(i);
+	    		  JSONObject node = (JSONObject) arrayElement.get("node");
+	    		  
+	    		  String nameTemp = (String) node.get("name");
+	    		  name = nameTemp;
+	    		  
+	    		  long attributeIndex = (long) node.get("atr");
+	    		  Long attributeIndexLong = new Long (attributeIndex);
+	    		  attributeIndexInt = attributeIndexLong.intValue();
+	    		  
+	    		  long value = (long) node.get("val");
+	    		  Long valueLong = new Long (value);
+	    		  writeValue = valueLong.doubleValue();
+	    		  
+	    		  PayloadNode payloadNode = new PayloadNode(name, attributeIndexInt, writeValue);
+	    		  this.paramBank.payloadNodes.add(payloadNode);
+	    		  System.out.println("ADDED PAYLOAD NODE IN PARAMBANK!");
+	    		  System.out.println("name: " + name);
+	    		  System.out.println("atr: " + attributeIndexInt);
+	    		  System.out.println("value: " + writeValue);
+	    	  }
+	    	  
+	  	} catch (ParseException e) {
+	  		e.printStackTrace();
+	  	} finally {
+	  		
+	  	}
+	}
+	
 	private void GETaction() throws Throwable {
 	 	UaRequest readRequest = new UaRequest(this.parentClient, ServiceType.Read, this.paramBank);
     	extendResponse(readRequest.getResponse());
@@ -161,6 +210,10 @@ public class RequestAggregate {
 	}
 	
 	private void PUTaction() throws Throwable {
+		NodeId refTypeId = new NodeId(0, 47);
+    	UaRequest browseRequest = new UaRequest(this.parentClient, ServiceType.Browse, this.paramBank, refTypeId);
+    	this.paramBank.defineBrowsedNodeResultNodes(browseRequest.getBrowseResultNodes());
+    	
 		UaRequest writeRequest = new UaRequest(this.parentClient, ServiceType.Write, this.paramBank);
     	extendResponse(writeRequest.getResponse());
 	}
@@ -194,11 +247,17 @@ public class RequestAggregate {
 	
 	public class UaParamBank {
 		private NodeId targetNode;
+		private WriteValue[] predefinedNodesToWrite;
+		private NodeId referenceType;
 		private ArrayList<UnsignedInteger> targetNodeAttributes;
 		private Double writeValueDouble;
 		
+		private ArrayList<PayloadNode> payloadNodes;
+		private ExpandedNodeId[] BrowsedNodeResultNodes = null;
+		
 		public UaParamBank(){
 			this.targetNodeAttributes = new ArrayList<UnsignedInteger>();
+			this.payloadNodes = new ArrayList<PayloadNode>();
 		}
 		
 		public void setTargetNode(int namespace, String name){
@@ -227,16 +286,88 @@ public class RequestAggregate {
 			this.targetNodeAttributes.add(targetAttribute);
 		}
 		
+		public void setBrowseReferenceTypeFilterNodeId(NodeId referenceType){
+			this.referenceType = referenceType;
+		}
+		
+		public void defineBrowsedNodeResultNodes(ExpandedNodeId[] nodes){
+			this.BrowsedNodeResultNodes = nodes;
+		}
+			
 		public WriteValue[] getNodesToWrite(){
 			NodeId nodeId = this.targetNode;
 			Variant variant = new Variant(this.writeValueDouble);
 			DataValue writeValue = new DataValue(variant);
+			WriteValue[] nodesToWrite;
+			ArrayList<WriteValue> writeNodeMatches = new ArrayList<WriteValue>();
 			
-			WriteValue[] nodesToWrite = new WriteValue[this.targetNodeAttributes.size()];
+			int nsindex = 5; //TODO: remove hardcoded namespace index, restore nsindex below!
 			
-			for (int i=0; i<(this.targetNodeAttributes.size()); i++){
-				nodesToWrite[i] = new WriteValue(nodeId, this.targetNodeAttributes.get(i), null, writeValue);
+			System.out.println("number of payload nodes: " + payloadNodes.size());
+			if(this.payloadNodes.size() > 0){ //&& this.BrowsedNodeResultNodes.length > 0){
+				
+				for (int p=0; p<(payloadNodes.size()); p++){
+					
+					NodeId localNodeId = new NodeId(nsindex, payloadNodes.get(p).name); //TODO: remove this iteration of localNodeId and restore below!
+					
+					/*BEGINNING OF TEMPORARY BLOCK*/
+					UnsignedInteger attributeUInt = new UnsignedInteger(payloadNodes.get(p).attribute);
+					Variant variant2 = new Variant(payloadNodes.get(p).value);
+					DataValue writeValue2 = new DataValue(variant2);
+					
+					WriteValue wVal = new WriteValue(localNodeId, attributeUInt, null, writeValue2);
+					writeNodeMatches.add(wVal);
+					/*END OF TEMPORARY BLOCK*/
+					
+					for (int k=0; k<(this.BrowsedNodeResultNodes.length); k++){
+						
+						//int nsindex = this.BrowsedNodeResultNodes[k].getNamespaceIndex();
+						
+						
+						
+						//NodeId localNodeId = new NodeId(nsindex, payloadNodes.get(p).name);
+						ExpandedNodeId localExpandedNodeId = new ExpandedNodeId(localNodeId);
+						
+						//System.out.println("name: " + payloadNodes.get(p).name);
+						//System.out.println("attribute: " + payloadNodes.get(p).attribute);
+						//System.out.println("value: " + payloadNodes.get(p).value);
+						
+						/*
+						if(localExpandedNodeId.getValue() == this.BrowsedNodeResultNodes[k].getValue()){
+							
+							System.out.println("NODE MATCH!");
+							
+							UnsignedInteger attributeUInt = new UnsignedInteger(payloadNodes.get(p).attribute);
+							Variant variant2 = new Variant(payloadNodes.get(p).value);
+							DataValue writeValue2 = new DataValue(variant2);
+							
+							WriteValue wVal = new WriteValue(localNodeId, attributeUInt, null, writeValue2);
+							writeNodeMatches.add(wVal);
+						} else {
+							System.out.println("NO NODE MATCH!");
+						}
+						*/
+						
+						
+						
+					}
+				}
+				
+				nodesToWrite = new WriteValue[writeNodeMatches.size()];
+				for (int i=0; i<writeNodeMatches.size(); i++){
+					nodesToWrite[i] = writeNodeMatches.get(i);
+				}
+				
+			} else {
+				nodesToWrite = new WriteValue[this.targetNodeAttributes.size()];
+				
+				for (int i=0; i<(this.targetNodeAttributes.size()); i++){
+					nodesToWrite[i] = new WriteValue(nodeId, this.targetNodeAttributes.get(i), null, writeValue);
+				}
 			}
+			
+			
+
 			return nodesToWrite;
 		}
 		
@@ -245,8 +376,11 @@ public class RequestAggregate {
 			UnsignedInteger mRequestedMaxReferencesPerNode = new UnsignedInteger(intReqMaxRefsPerNode);
 			NodeId pNodeId = this.targetNode;
 			BrowseDirection browseDirection = BrowseDirection.Both;
+			NodeId referenceTypeId = null;
 			
-			NodeId referenceTypeId = null;//this.tNodeId;
+			if(this.referenceType != null){
+				referenceTypeId = this.referenceType;
+			}
 			
 			java.lang.Boolean includeSubtypes = true;
 			int intNodeClassMask = 63;
@@ -270,9 +404,21 @@ public class RequestAggregate {
 			
 			return nodesToRead;
 		}
+		
+		
 	}
 
-	
+	public class PayloadNode{
+		public String name;
+		public int attribute;
+		public Double value;
+		
+		public PayloadNode(String name, int atr, Double val){
+			this.name = name;
+			this.attribute = atr;
+			this.value = val;
+		}
+	}
 
 	
 	
