@@ -74,7 +74,7 @@ public class RequestAggregate {
 		NodeId targetNode;
 		
 		try {
-			parsePayload(payload);
+			parsePayload(payload, this.method);
 			parsePath();
 			parseQueryString();
 			parseMethod();
@@ -166,45 +166,48 @@ public class RequestAggregate {
     	}
 	}
 	
-	private void parsePayload(String payload) throws Throwable{
-		String name;
-		Double writeValue = 0.0;
-		int attributeIndexInt = 0;
+	private void parsePayload(String payload, Method method) throws Throwable{
+		if(method == Method.put){
+			String name;
+			Double writeValue = 0.0;
+			int attributeIndexInt = 0;
+			
+			JSONParser parser = new JSONParser();
+			System.out.println("PAYLOAD: \n" + payload);
+			try {
+		    	  Object obj3 = parser.parse(payload);
+		    	  JSONArray array = (JSONArray) obj3;
+		    	  
+		    	  for(int i=0; i <= (array.size()-1);i++){
+		    		  JSONObject arrayElement= (JSONObject) array.get(i);
+		    		  JSONObject node = (JSONObject) arrayElement.get("node");
+		    		  
+		    		  String nameTemp = (String) node.get("name");
+		    		  name = nameTemp;
+		    		  
+		    		  long attributeIndex = (long) node.get("atr");
+		    		  Long attributeIndexLong = new Long (attributeIndex);
+		    		  attributeIndexInt = attributeIndexLong.intValue();
+		    		  
+		    		  long value = (long) node.get("val");
+		    		  Long valueLong = new Long (value);
+		    		  writeValue = valueLong.doubleValue();
+		    		  
+		    		  PayloadNode payloadNode = new PayloadNode(name, attributeIndexInt, writeValue);
+		    		  this.paramBank.payloadNodes.add(payloadNode);
+		    		  System.out.println("ADDED PAYLOAD NODE IN PARAMBANK!");
+		    		  System.out.println("name: " + name);
+		    		  System.out.println("atr: " + attributeIndexInt);
+		    		  System.out.println("value: " + writeValue);
+		    	  }
+		    	  
+		  	} catch (ParseException e) {
+		  		e.printStackTrace();
+		  	} finally {
+		  		
+		  	}
+		}
 		
-		JSONParser parser = new JSONParser();
-		System.out.println("PAYLOAD: \n" + payload);
-		try {
-	    	  Object obj3 = parser.parse(payload);
-	    	  JSONArray array = (JSONArray) obj3;
-	    	  
-	    	  for(int i=0; i <= (array.size()-1);i++){
-	    		  JSONObject arrayElement= (JSONObject) array.get(i);
-	    		  JSONObject node = (JSONObject) arrayElement.get("node");
-	    		  
-	    		  String nameTemp = (String) node.get("name");
-	    		  name = nameTemp;
-	    		  
-	    		  long attributeIndex = (long) node.get("atr");
-	    		  Long attributeIndexLong = new Long (attributeIndex);
-	    		  attributeIndexInt = attributeIndexLong.intValue();
-	    		  
-	    		  long value = (long) node.get("val");
-	    		  Long valueLong = new Long (value);
-	    		  writeValue = valueLong.doubleValue();
-	    		  
-	    		  PayloadNode payloadNode = new PayloadNode(name, attributeIndexInt, writeValue);
-	    		  this.paramBank.payloadNodes.add(payloadNode);
-	    		  System.out.println("ADDED PAYLOAD NODE IN PARAMBANK!");
-	    		  System.out.println("name: " + name);
-	    		  System.out.println("atr: " + attributeIndexInt);
-	    		  System.out.println("value: " + writeValue);
-	    	  }
-	    	  
-	  	} catch (ParseException e) {
-	  		e.printStackTrace();
-	  	} finally {
-	  		
-	  	}
 	}
 	
 	private void GETaction() throws Throwable {
@@ -307,13 +310,14 @@ public class RequestAggregate {
 			WriteValue[] nodesToWrite;
 			ArrayList<WriteValue> writeNodeMatches = new ArrayList<WriteValue>();
 			
-			int nsindex = 5; //TODO: remove hardcoded namespace index, restore nsindex below!
+			
 			
 			System.out.println("number of payload nodes: " + payloadNodes.size());
 			if(this.payloadNodes.size() > 0){ //&& this.BrowsedNodeResultNodes.length > 0){
 				
 				for (int p=0; p<(payloadNodes.size()); p++){
 					
+					int nsindex = this.targetNode.getNamespaceIndex(); //TODO: remove hardcoded namespace index, restore nsindex below!
 					NodeId localNodeId = new NodeId(nsindex, payloadNodes.get(p).name); //TODO: remove this iteration of localNodeId and restore below!
 					
 					/*BEGINNING OF TEMPORARY BLOCK*/
@@ -328,8 +332,6 @@ public class RequestAggregate {
 					for (int k=0; k<(this.BrowsedNodeResultNodes.length); k++){
 						
 						//int nsindex = this.BrowsedNodeResultNodes[k].getNamespaceIndex();
-						
-						
 						
 						//NodeId localNodeId = new NodeId(nsindex, payloadNodes.get(p).name);
 						ExpandedNodeId localExpandedNodeId = new ExpandedNodeId(localNodeId);
